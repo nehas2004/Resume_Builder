@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -9,6 +11,8 @@ const app = express();
 const port = process.env.PORT || 4000;
 const openaiKey = process.env.OPENAI_API_KEY;
 const openaiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 if (!openaiKey || openaiKey === 'your_openai_api_key_here') {
   console.error('Missing or invalid OPENAI_API_KEY. Create a .env file from .env.example and set your real OpenAI key.');
@@ -220,6 +224,19 @@ app.post('/api/generate', async (req, res) => {
     console.error('OpenAI API error:', errorMessage, error);
     return res.status(500).json({ message: `OpenAI error: ${errorMessage}` });
   }
+});
+
+const distPath = path.resolve(__dirname, 'dist');
+
+app.use(express.static(distPath));
+app.get('/', (req, res) => {
+  return res.sendFile(path.join(distPath, 'index.html'));
+});
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ message: 'API route not found' });
+  }
+  return res.sendFile(path.join(distPath, 'index.html'));
 });
 
 app.listen(port, () => {
