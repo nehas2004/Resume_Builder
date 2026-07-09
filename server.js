@@ -229,6 +229,9 @@ app.post('/api/generate', async (req, res) => {
 const distPath = path.resolve(__dirname, 'dist');
 
 app.use(express.static(distPath));
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
 app.get('/', (req, res) => {
   return res.sendFile(path.join(distPath, 'index.html'));
 });
